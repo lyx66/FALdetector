@@ -37,6 +37,7 @@ def classify_fake(model, img_path, no_crop=False,
         faces = face_detection(img_path, verbose=False, model_file=model_file)
         if len(faces) == 0:
             print("no face detected by dlib, exiting")
+            return "Missing"
             sys.exit()
         face, box = faces[0]
     face = resize_shorter_side(face, 400)[0]
@@ -45,7 +46,7 @@ def classify_fake(model, img_path, no_crop=False,
     # Prediction
     with torch.no_grad():
         prob = model(face_tens.unsqueeze(0))[0].sigmoid().cpu().item()
-    return prob
+    return str(prob*100 )
 
 
 if __name__ == '__main__':
@@ -64,4 +65,6 @@ if __name__ == '__main__':
 
     model = load_classifier(args.model_path, args.gpu_id)
     prob = classify_fake(model, args.input_path, args.no_crop)
-    print("Probibility being modified by Photoshop FAL: {:.2f}%".format(prob*100))
+    print("Probibility being modified by Photoshop FAL: {}%".format(prob))
+    with open('output.txt', 'w') as f:
+        f.write(prob)
